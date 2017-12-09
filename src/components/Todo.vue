@@ -1,5 +1,6 @@
 <template>
   <div>
+    <input v-model="newTodo.title" v-on:keyup.13="addTodo(newTodo)"/>
     <table class="table table-Striped">
       <thead>
         <th>Id</th><th>Title</th><th>Edit</th><th>Delete</th>
@@ -31,10 +32,28 @@ export default{
     return {
       todos: [],
       editTodo: null,
+      newTodo: {
+        "title": "",
+      },
       url: "https://restful-api-sv.herokuapp.com/api/todos/"
     }
   },
   methods: {
+    addTodo(newTodo){
+      fetch(this.url, {
+        body: JSON.stringify(newTodo),
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+      })
+      .then(response => response.json())
+      .then((res) => {
+        this.newTodo.title = '';
+        this.todos.push(res.data);
+        console.log(res);
+      })
+    },
     updateTodo(todo){
       fetch(this.url, {
         body: JSON.stringify(todo),
@@ -44,19 +63,17 @@ export default{
         },
       })
       .then(() => {
+        console.log(JSON.stringify(todo));
         this.editTodo = null;
         console.log(todo);
       })
     },
     deleteTodo(id, i){
+      this.todos.splice(i, 1);
       fetch(this.url + id, {
         method: "DELETE"
       })
-      .then(() => {
-        this.todos.splice(i, 1);
-        console.log(id);
-      })
-    }
+    },
   },
   mounted(){
     fetch(this.url)
@@ -66,7 +83,6 @@ export default{
         console.log(res);
       })
     console.log("mounted");
-    console.log(this.editTodo);
   }
 }
 </script>
